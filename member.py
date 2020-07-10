@@ -49,6 +49,7 @@ class guild:
         self.mentionnum = 3
         self.time = {}
         self.time_key = []
+        self.msg = ""
     
     def set(self,time):
         send = time + "@"

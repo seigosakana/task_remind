@@ -17,7 +17,6 @@ bucket_name = "hands-up0"
 
 #discord情報欄
 bot = commands.Bot(command_prefix='!')
-bot.remove_command("help")
 token = os.environ['DISCORD_BOT_TOKEN']
 s3 = boto3.client('s3',aws_access_key_id=accesckey,aws_secret_access_key=secretkey,region_name=ragion)
 
@@ -30,10 +29,10 @@ def get_s3file(bucket_name, key):
     return io.TextIOWrapper(io.BytesIO(s3obj['Body'].read()))
 
 #csv作成
-def create_csv(id,server,name):
+def create_csv(id,server,name,msg):
     with open("/tmp/" + str(id) + ".csv","w",newline="") as f:
         writer = csv.writer(f)
-        writer.writerow([id,str(guild[id].mentionnum),name])
+        writer.writerow([id,str(guild[id].mentionnum),name,msg])
         for i in guild[id].time_key:
             if (len(guild[id].time[i].name) == 0) and (guild[id].time[i].tmp == 0):
                 textout = [i] + [guild[id].time[i].tmp] + [str(x) for x in guild[id].time[i].n]
@@ -51,6 +50,7 @@ def read_csv(data):
     guild[id] = member.guild()
     if len(data[0]) > 1:
         guild[id].mentionnum = int(data[0][1])
+        guild[id].msg = data[0][3]
     data.pop(0)
     #time_key作成
     for i in range(len(data)):
@@ -137,7 +137,7 @@ async def set(ctx,*args):
     if m == "":
         m = "```\n追加したい交流戦の時間を数値で入力してください\n```"
     await ctx.send(m)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -154,7 +154,7 @@ async def out(ctx,*args):
     if m == "":
         m = "```\n該当する交流戦の時間がありませんでした\n```"
     await ctx.send(m)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -168,8 +168,8 @@ async def clear(ctx):
         await role.delete()
         await ctx.guild.create_role(name=str(i),mentionable = True)
     m , embed = member.nowhands(guild[ctx.author.guild.id])
-    await ctx.send(content=m,embed=embed)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -177,7 +177,11 @@ async def clear(ctx):
 @bot.command()
 async def now(ctx):
     m , embed = member.nowhands(guild[ctx.author.guild.id])
-    await ctx.send(content=m,embed=embed)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
 # -------------------------------------------------------------------------------------------------------------
 
 ###　現在挙手状況メンション付き表示
@@ -185,7 +189,11 @@ async def now(ctx):
 async def mnow(ctx):
     guild[ctx.author.guild.id].mention = 1
     m , embed = member.nowhands(guild[ctx.author.guild.id])
-    await ctx.send(content=m,embed=embed)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
 # -------------------------------------------------------------------------------------------------------------
 
 ### 挙手
@@ -220,8 +228,12 @@ async def c(ctx,*args):
     # 変更後の挙手状態を表示
     m2 , embed = member.nowhands(guild[ctx.author.guild.id])
     m = m2 + m 
-    await ctx.send(content=m,embed=embed)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -251,8 +263,12 @@ async def rc(ctx,*args):
     # 変更後の挙手状態を表示
     m2 , embed = member.nowhands(guild[ctx.author.guild.id])
     m = m2 + m 
-    await ctx.send(content=m,embed=embed)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -277,8 +293,12 @@ async def d(ctx,*args):
     # 変更後の挙手状態を表示
     m2 , embed = member.nowhands(guild[ctx.author.guild.id])
     m = m2 + m 
-    await ctx.send(content=m,embed=embed)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -303,8 +323,12 @@ async def rd(ctx,*args):
     # 変更後の挙手状態を表示
     m2 , embed = member.nowhands(guild[ctx.author.guild.id])
     m = m2 + m 
-    await ctx.send(content=m,embed=embed)
-    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name)
+    if guild[ctx.author.guild.id].msg == "":
+        pass
+    else:
+        await guild[ctx.author.guild.id].msg.delete()
+    guild[ctx.author.guild.id].msg = await ctx.send(content=m,embed=embed)
+    create_csv(ctx.author.guild.id,guild[ctx.author.guild.id],ctx.author.guild.name,guild[ctx.author.guild.id].msg)
     upload(ctx.author.guild.id)
 # -------------------------------------------------------------------------------------------------------------
 
@@ -312,13 +336,9 @@ async def rd(ctx,*args):
 @bot.command()
 async def ch(ctx,*args):
     for i in args:
-        if i == "-1":
-            m = "```mention設定をOFFにしました\n```"
-            guild[ctx.author.guild.id].mentionnum = -1
-            break
         if  str.isdecimal(i):
-            if int(i) > 6:
-                m = "```5以下で設定してください\n```"
+            if int(i) > 8:
+                m = "```7以下で設定してください\n```"
             else:
                 guild[ctx.author.guild.id].mentionnum = int(i)
                 m = "```\nmentionを送る人数を@" + str(i) + "人に変更しました\n```"

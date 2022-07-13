@@ -1,2 +1,2 @@
-discord.py[voice]>=1.2.5
+git+https://github.com/Rapptz/discord.py.git#egg=discord.py
 boto3

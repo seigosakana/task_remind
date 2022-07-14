@@ -21,9 +21,9 @@ intents = discord.Intents.all()
 token = os.environ['DISCORD_BOT_TOKEN']
 
 #s3情報欄
-accesckey = #os.environ['KEY_ID']
+accesckey = os.environ['KEY_ID']
 secretkey = os.environ['SECRET_KEY_ID']
-region = #os.environ['REGION_NAME']
+region = os.environ['REGION_NAME']
 s3 = boto3.client('s3',aws_access_key_id=accesckey,aws_secret_access_key=secretkey,region_name=region)
 bucket_name = "task-remind"
 
